@@ -1,0 +1,141 @@
+---
+title: "Design of Experiments"
+author: "Nishanth Girish"
+date: "2023-07-17"
+output: word_document
+---
+
+
+```{r}
+# Importing necessary libraries:
+
+library(report)
+library(multcomp)
+```
+
+OBJECTIVE:
+To test if the strontium concentrations are same among all the given water bodies.
+
+DATASET:
+The following data are strontium concentrations(mg/ml)in five different bodies of water.
+
+Hypothesis:
+H0: Mean concentration of strontium in different water bodies are equal
+H1: At least one of the means is different.
+
+```{r}
+# Loading the data:
+
+data <- read.csv("C:/Users/nisha/Downloads/Strontium.csv")
+data
+```
+
+```{r}
+# Structure of the data:
+
+str(data)
+```
+
+
+```{r}
+# Converting to factors:
+
+bodies <- as.factor(data$WaterBody)
+```
+
+
+```{r}
+# Boxplot:
+
+boxplot(Concentration~WaterBody,data=data,xlab= "Water Bodies",ylab= "Concentration")
+```
+#######################################################################################################
+
+ASSUMPTIONS:
+For the validity of the F-test in ANOVA the following assumptions are made.
+1. The effects of different factors (treatments and environmental effects) are
+additive in nature.
+2. Observations of character under study follow normal distribution
+3. Assumption of homogeneity of variance
+4. Experimental errors are distributed independently and normally with mean zero
+and constant variation i.e. ~ N (0,V)
+
+########################################################################################################
+
+
+########################################################################################################
+
+A. To check if the given dataset satisfies the assumptions required for ANOVA.
+
+(1) Observations of character under study follow normal distribution:
+Testing for Normality: Shapiro Wilks Test:
+The Shapiro-Wilk test tests the null hypothesis that the samples come from a
+normal distribution against the alternative hypothesis that the samples do not come
+from a normal distribution.
+
+```{r}
+# Normality of observations:
+
+shapiro.test(data$Concentration)
+```
+The conclusion above, is supported by the Shapiro-Wilk test (W = 0.94235, p = 0.1052) which indicates that the observations are normally distributed.
+
+########################################################################################################
+
+
+########################################################################################################
+
+(2) Assumption of homogeneity of variances:
+Bartlett’s test:
+Bartlett’s test tests the null hypothesis that the group variances are equal against
+the alternative hypothesis that the group variances are not equal. 
+
+```{r}
+# Homegeneity of variances:
+
+bartlett.test(Concentration ~ WaterBody, data=data)
+```
+Since p values is greater than 0.05, we can conclude that different groups have equal variances.
+
+########################################################################################################
+
+
+########################################################################################################
+
+(3) Experimental errors are distributed independently and normally with
+mean zero and constant variation:
+The Shapiro-Wilk test tests the null hypothesis that experimental errors are
+distributed normally against the alternative hypothesis that the experimental errors
+do not distributed normally.
+
+```{r}
+# Normality of errors:
+
+conc.anova.residual <- residuals(aov(Concentration ~ WaterBody, data=data))
+shapiro.test(conc.anova.residual)
+```
+The errors are normally distributed since the p-value of the Shapiro-Wilk test > 0.05.
+
+########################################################################################################
+
+```{r}
+# ANOVA:
+
+model <-aov(Concentration~WaterBody, data=data)
+summary(model)
+
+report(model)
+```
+INTERPRETATION:
+
+Given that the p-value is smaller than 0.05, we reject the null hypothesis, so we reject the hypothesis that the mean concentration of strontium in different water bodies are equal. Therefore, we can conclude that at least one mean is different than the others in terms of strontium concentration (p-value < 3.95e-12).
+
+
+POST-HOC ANALYSIS:
+```{r}
+# Tukey's HSD test:
+
+TukeyHSD(model, conf.level = 0.95)
+```
+Grayson's Pond vs Angler's Cove, Rock River vs Angler's Cove, Grayson's Pond vs Appletree Lake, Grayson's Pond vs Appletree Lake, Rock River vs Appletree Lake, Grayson's Pond vs Beaver Lake, Rock River vs Beaver Lake, and Rock River vs Grayson's Pond are significantly different at the 95 percent confidence level, according to the Tukey HSD test.
+

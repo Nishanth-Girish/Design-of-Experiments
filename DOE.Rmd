@@ -1,0 +1,137 @@
+---
+title: "Untitled"
+author: "Nishanth Girish"
+date: "2023-07-17"
+output: word_document
+---
+
+########################################################################################################
+
+# ANOVA:
+ANOVA is a statistical test that can be used to compare more than two groups.
+The analysis of variance is the systematic algebraic procedure of decomposing (i.e.
+partitioning) overall variation ( i.e. total variation) in the responses observed in an
+experiment into different component of variations such as treatment variation and
+error variation. Each component is attributed identifiable cause or source of
+variation.
+
+# ASSUMPTIONS:
+For the validity of the F-test in ANOVA the following assumptions are made.
+1. The effects of different factors (treatments and environmental effects) are
+additive in nature.
+2. Observations of character under study follow normal distribution
+3. Assumption of homogeneity of variance
+4. Experimental errors are distributed independently and normally with mean zero
+and constant variation i.e. ~ N (0,V)
+
+########################################################################################################
+
+
+########################################################################################################
+
+A. To check if the given dataset satisfies the assumptions required for ANOVA.
+
+(1) Observations of character under study follow normal distribution:
+Testing for Normality: Shapiro Wilks Test:
+The Shapiro-Wilk test tests the null hypothesis that the samples come from a
+normal distribution against the alternative hypothesis that the samples do not come
+from a normal distribution.
+
+```{r}
+Circum <- Orange$circumference
+shapiro.test(Circum)
+```
+The conclusion above, is supported by the Shapiro-Wilk test (W = 0.945, p =0.08) which indicates observation are normally distributed.
+
+########################################################################################################
+
+
+########################################################################################################
+
+(2) Assumption of homogeneity of variance:
+Bartlett’s test:
+Bartlett’s test tests the null hypothesis that the group variances are equal against
+the alternative hypothesis that the group variances are not equal. Bartlett’s test
+should be used when the data is normal and Levene’s test should be used when the
+data is non-normal.
+
+
+```{r}
+bartlett.test(circumference ~ Tree, data=Orange)
+```
+Since p values is greater than 0.05, we can conclude that different tree groups are
+equal variances.
+
+########################################################################################################
+
+
+########################################################################################################
+
+(3) Experimental errors are distributed independently and normally with
+mean zero and constant variation:
+The Shapiro-Wilk test tests the null hypothesis that experimental errors are
+distributed normally against the alternative hypothesis that the experimental errors
+do not distributed normally.
+
+```{r}
+circum.anova.residual <- residuals(aov(circumference ~ Tree, data=Orange))
+shapiro.test(circum.anova.residual)
+```
+Since p values is less than 0.05, we can conclude that experimental errors are not
+normally distributed.
+
+```{r}
+# Residual Plots:
+
+plot(circum.anova.residual, Orange$Circumference)
+```
+
+########################################################################################################
+
+Aim:
+Check the equality of average grain yield obtained by varieties A, B and C.
+
+Data set:
+Three varieties A, B and C of wheat were compared in the CRD with 6 replications for
+each variety. The layout and grain yield in kg/plot are given below. Analyze the data and
+state your conclusion.
+
+Procedure:
+Hypothesis:
+H0: Mean yield of varieties A, B and C are equal
+
+H1: At least two of the varieties have different mean yield
+
+```{r}
+data <- read.csv("C:/Users/nisha/Downloads/CRD.csv")
+data
+```
+
+
+```{r}
+View(data)
+str(data)
+```
+```{r}
+varieties <- as.factor(data$Varieties)
+names(data)
+```
+```{r}
+boxplot(Yield~Varieties,data=data,xlab= "Varieties",ylab= "Yield")
+```
+Mean yield of varieties B and C is slightly higher than mean yield of variety A and
+observations are normally distributed for variety C as compare to that of Varieties A and
+B.
+
+```{r}
+model <-aov(Yield~Varieties, data=data)
+summary(model)
+```
+Here since the p-value &gt; 0.05, we fail to reject our H 0. This implies that there is no difference
+in mean yield of varieties (ABC).
+
+```{r}
+library("report") # Load the package every time you start R
+
+report(model)
+```
